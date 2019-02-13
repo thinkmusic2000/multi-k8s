@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mikemad/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run mikemad/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t mikemad/multi-client ./client
+  - docker build -t mikemad/multi-nginx ./nginx
+  - docker build -t mikemad/multi-server ./server
+  - docker build -t mikemad/multi-worker ./worker
+# Log in to Docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push mikemad/multi-client
+  - docker push mikemad/multi-nginx
+  - docker push mikemad/multi-server
+  - docker push mikemad/multi-worker
+
